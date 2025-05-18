@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculator</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="calculator">
+    <h1>Simple Calculator</h1>
+    <div class="input-group">
+        <input type="number" id="num1" placeholder="First number">
+        <select id="operation">
+            <option value="add">+ (Add)</option>
+            <option value="subtract">- (Subtract)</option>
+            <option value="multiply">× (Multiply)</option>
+            <option value="divide">÷ (Divide)</option>
+            <option value="power">^ (Power)</option>
+            <option value="sqrt">√ (Square Root)</option>
+        </select>
+        <input type="number" id="num2" placeholder="Second number">
+    </div>
+    <button onclick="calculate()">Calculate</button>
+    <div id="result" class="result"></div>
+</div>
+
+<script>
+    function calculate() {
+        const num1 = parseFloat(document.getElementById('num1').value);
+        const num2 = parseFloat(document.getElementById('num2').value);
+        const operation = document.getElementById('operation').value;
+
+        // For square root, we only need num1
+        const requestData = operation === 'sqrt'
+            ? { num1, operation }
+            : { num1, num2, operation };
+
+        fetch('http://localhost:8080/api/calculate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestData)
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => { throw err; });
+            }
+            return response.json();
+        })
+        .then(data => {
+            document.getElementById('result').innerHTML = `
+                <p>Result: <strong>${data.result}</strong></p>
+                <p>Operation: ${data.operation}</p>
+                <p>${data.message}</p>
+            `;
+        })
+        .catch(error => {
+            document.getElementById('result').innerHTML = `
+                <p class="error">Error: ${error.message || 'Unknown error occurred'}</p>
+            `;
+        });
+    }
+</script>
+</body>
+</html>
